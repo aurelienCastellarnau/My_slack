@@ -5,7 +5,7 @@
 ** Login   <castel_a@etna-alternance.net>
 ** 
 ** Started on  Wed Feb  1 16:32:30 2017 CASTELLARNAU Aurelien
-** Last update Mon Apr 10 23:35:35 2017 CASTELLARNAU Aurelien
+** Last update Tue Apr 25 00:50:30 2017 CASTELLARNAU Aurelien
 */
 
 #include <stdlib.h>
@@ -23,14 +23,18 @@ t_option	*new_option(int mandatory,
   t_option	*option;
 
   if ((option = malloc(sizeof (*option))) == NULL)
-    return (NULL);
+    {
+      my_log(__func__, MEM_ERR, 1);
+      return (NULL);
+    }
   option->mandatory = mandatory;
   option->mandatory_arguments = mandatory_arguments;
   option->allowed_arguments = allowed_arguments;
   option->to_execute = 0;
   option->name = my_strdup(name);
   option->action = action;
-  option->parameters = NULL;
+  if ((option->parameters = create_chain(NULL)) == NULL)
+    return (NULL);
   return (option);
 }
 
@@ -66,7 +70,7 @@ void		free_options_in_chain(t_chain **chain)
 		  free(param);
 		  link_param = link_param->next;
 		}
-	      delete_chain(option->parameters);
+	      delete_chain(&(option->parameters));
 	    }
 	  free(option);
 	}

@@ -5,7 +5,7 @@
 ** Login   <castel_a@etna-alternance.net>
 ** 
 ** Started on  Mon Oct 24 14:47:39 2016 CASTELLARNAU Aurelien
-** Last update Wed Nov 16 11:05:59 2016 CASTELLARNAU Aurelien
+** Last update Mon Apr 24 23:50:39 2017 CASTELLARNAU Aurelien
 */
 
 #include <stdlib.h>
@@ -19,7 +19,8 @@ int	is_alpha_num(char c)
 {
   if ((c >= '0' && c <= '9')
       || (c >= 'A' && c <= 'Z')
-      || (c >= 'a' && c <= 'z'))
+      || (c >= 'a' && c <= 'z')
+      || c == '-')
     return (1);
   else
     return (0);

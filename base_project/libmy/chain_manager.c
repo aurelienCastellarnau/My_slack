@@ -5,27 +5,13 @@
 ** Login   <castel_a@etna-alternance.net>
 ** 
 ** Started on  Fri Feb  3 02:13:19 2017 CASTELLARNAU Aurelien
-** Last update Sat Apr 15 22:22:47 2017 CASTELLARNAU Aurelien
+** Last update Thu Apr 27 22:21:29 2017 CASTELLARNAU Aurelien
 */
 
 #include <stdlib.h>
 #include "libmy.h"
 
-t_chain		*create_chain()
-{
-  t_chain	*chain;
-
-  if ((chain = malloc(sizeof(*chain))) == NULL)
-    return (NULL);
-  chain->first = NULL;
-  chain->last = NULL;
-  chain->index = 0;
-  chain->dictionnary = NULL;
-  chain->free = NULL;
-  return (chain);
-}
-
-t_chain		*create_chainf(void (*free)(t_chain**))
+t_chain		*create_chain(void (*free)(t_chain**))
 {
   t_chain	*chain;
 
@@ -57,7 +43,6 @@ int		add_link(t_chain **chain, void *content)
       return (1);
     }
   link->content = content;
-  
   if ((*chain)->first == NULL)
     {
       init_chain(chain, &link);
@@ -82,6 +67,8 @@ int		remove_link(t_chain **chain, t_link *link)
       free((*chain)->dictionnary);
       free((*chain));
       (*chain) = NULL;
+      free(link);
+      return (-1);
     }
   else if (link == (*chain)->first)
     {
@@ -111,26 +98,31 @@ int		remove_link(t_chain **chain, t_link *link)
   return (0);
 }
 
-int	delete_chain(t_chain *chain)
+int	delete_chain(t_chain **chain)
 {
-  while (chain != NULL)
+  if ((*chain)->free != NULL)
+    (*chain)->free(chain);
+  while ((*chain) != NULL)
     {
-      if (remove_link(&chain, chain->last))
+      if (remove_link(chain, (*chain)->last))
 	return (1);
     }
   return (0);
 }
 
-int	delete_chainf(t_chain **chain)
+int	chain_is_null(t_chain **chain)
 {
-  t_link *ltmp;
-  
-  (*chain)->free(chain);
-  while ((*chain) != NULL)
-    {
-      ltmp = (*chain)->first;
-      if (remove_link(chain, (*chain)->first))
-	return (1);
-    }
+  if (chain == NULL ||
+      (*chain) == NULL)
+    return (1);
+  return (0);
+}
+
+int	chain_is_empty(t_chain **chain)
+{
+  if (chain == NULL ||
+      (*chain) == NULL ||
+      (*chain)->first == NULL)
+    return (1);
   return (0);
 }

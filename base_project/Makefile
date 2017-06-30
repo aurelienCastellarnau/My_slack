@@ -5,7 +5,7 @@
 ## Login   <castel_a@etna-alternance.net>
 ## 
 ## Started on  Wed Feb  1 09:37:15 2017 CASTELLARNAU Aurelien
-## Last update Wed Apr 19 21:50:03 2017 CASTELLARNAU Aurelien
+## Last update Thu Apr 27 23:19:54 2017 CASTELLARNAU Aurelien
 ##
 
 CC      =       gcc
@@ -21,13 +21,18 @@ LDFLAGS =       -L ./libmy -lmy
 SRC     =       main.c \
 		display.c \
 		util.c \
-		config.c \
-		component.c \
-		server_action.c \
 		init.c \
+		component.c \
+		salon.c \
 		client.c \
+		format_run_parse.c \
+		init_run_params.c \
+		run_action.c \
+		run_parse.c \
+		listen_clients.c \
+		server_action.c \
 		server.c
-		
+
 OBJ     =       ${SRC:%.c=%.o}
 
 RM      =       rm -f

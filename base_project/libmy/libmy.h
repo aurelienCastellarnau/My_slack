@@ -5,12 +5,16 @@
 ** Login   <castel_a@etna-alternance.net>
 ** 
 ** Started on  Wed Feb  1 09:18:46 2017 CASTELLARNAU Aurelien
-** Last update Mon Apr 17 20:55:24 2017 CASTELLARNAU Aurelien
+** Last update Thu Apr 27 22:22:20 2017 CASTELLARNAU Aurelien
 */
 
 #ifndef _LIBMY_H_
 # define _LIBMY_H_
 # define MEM_ERR "memory allocation failed"
+# define PARSE_ERROR -1
+# define RUNTIME_ERROR -1
+# define MANDATORY 1
+# define OPTIONNAL 0
 /*
 ** typedef for t_option process
 */
@@ -82,12 +86,14 @@ typedef struct		s_logger
 ** libmy content
 */
 void		my_putstr(const char *str);
+int		my_nb_len(int nb);
 void		my_putstr_color(const char *color, const char *str);
 void		my_putchar(char c);
 void		my_put_nbr(int nbr);
+int		count_word(char *str);
 void		my_put_nbr_color(const char *color, int n);
 int		my_strcmp(const char *str1, const char *str2);
-char		*my_strcpy(char *str);
+char		*my_strcpy(char *str, char *str_dst);
 char		*my_strdup(char *str);
 int		my_strlen(const char *str);
 int		my_getnbr(char *str);
@@ -119,10 +125,14 @@ void		locate();
 /*
 ** libParse content
 */
-int		validate_opt(int argc, char *argv[], t_chain **options);
+
+/*
+** begin is the index to begin the parsing process, allow to avoid ./a.out
+*/ 
+int		validate_opt(int begin, int argc, char *argv[], t_chain **options);
 t_option	*new_option(int mandatory, int mandatory_arguments, int allowed_arguments, char *opt, void *action);
 void		free_options_in_chain(t_chain **chain);
-int		parse(int argc, char *argv[], t_chain **options);
+int		parse(int begin, int argc, char *argv[], t_chain **options);
 
 /*
 ** libList content
@@ -130,14 +140,14 @@ int		parse(int argc, char *argv[], t_chain **options);
 int		init_index(t_chain **chain);
 int		add_to_index(t_chain **chain, t_link **link);
 int		remove_from_index(t_chain **chain, t_link *link);
-t_chain		*create_chain();
-t_chain		*create_chainf(void (*free)(t_chain**));
+t_chain		*create_chain(void (*free)(t_chain**));
 int		add_link(t_chain **chain, void *content);
 int		remove_link(t_chain **chain, t_link *link);
-int		delete_chain(t_chain *chain);
-int		delete_chainf(t_chain **chain);
+int		delete_chain(t_chain **chain);
 t_link		*get_link_by_index(int index, t_chain *chain);
 t_link		*get_link_by_content(void *content, t_chain *chain);
+int		chain_is_null(t_chain **chain);
+int		chain_is_empty(t_chain **chain);
 
 /*
 ** libLog content

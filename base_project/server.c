@@ -4,92 +4,99 @@
 ** Made by CASTELLARNAU Aurelien
 ** Login   <castel_a@etna-alternance.net>
 ** 
-a** Started on  Sun Apr 16 15:46:32 2017 CASTELLARNAU Aurelien
-** Last update Thu Apr 20 00:44:39 2017 CASTELLARNAU Aurelien
+** Started on  Sun Apr 16 15:46:32 2017 CASTELLARNAU Aurelien
+** Last update Thu Apr 27 22:02:58 2017 CASTELLARNAU Aurelien
 */
 
 #include "libmy.h"
+#include "struct.h"
+#include "init_run_params.h"
+#include "server.h"
+#include "client.h"
 #include "util.h"
 #include "component.h"
 #include "server_action.h"
 #include "client.h"
 #include "server.h"
+#include "salon.h"
 
-int	get_connection()
+int		init_sock(int *sock, t_chain **clients, t_chain **salons)
 {
-  int		tmp_sock;
-  t_sockaddr_in	*addr_in;
- 
-  if ((addr_in = get_addrin()) == NULL)
-    return (SOCKET_ERROR);
-  if ((tmp_sock = get_socket()) == SOCKET_ERROR)
-    return (SOCKET_ERROR);
-  if (bind_to(tmp_sock, addr_in) == SOCKET_ERROR)
-    return (SOCKET_ERROR);
-  free(addr_in);
-  if (listen_to(tmp_sock, 4) == SOCKET_ERROR)
-    return (SOCKET_ERROR);
-  return (tmp_sock);
-}
+  t_sockaddr_in	*sin;
 
-int	workflow(int sock, t_chain *clients)
-{
-  int		max_sd;
-  fd_set	readfs;
-  int		index_client;
-  int		max_clients;
-  
-  max_clients = 4;
-  index_client = 0;
-  while (1)
+  if ((*clients = create_chain(NULL)) == NULL)
+    return (SOCKET_ERROR);
+  if ((*salons = create_chain(NULL)) == NULL)
+    return (SOCKET_ERROR);
+  if ((*sock = get_socket()) == SOCKET_ERROR)
+    return (SOCKET_ERROR);
+  if ((sin = get_addrin()) == NULL)
     {
-      max_sd = set_fds(&readfs, sock, clients);
-      if (select(max_sd + 1, &readfs, NULL, NULL, NULL) < 0)
-	{
-	  my_log(__func__, "A client leaved the server", 2);
-	  continue;
-	}
-      if (FD_ISSET(STDIN_FILENO, &readfs))
-	{
-	  if (broadcast(clients) == SOCKET_ERROR)
-	    return (SOCKET_ERROR);
-	}
-      else if (FD_ISSET(sock, &readfs))
-	{
-	  if (index_client + 1 > max_clients)
-	    my_log(__func__, "A client want to connect, but no more place on server.", 2);
-	  else if (accept_client(&clients, sock) == SOCKET_ERROR)
-	    continue;
-	  else
-	    {
-	      if (register_client(&clients, &readfs, max_sd) == SOCKET_ERROR)
-		continue;
-	      index_client++;
-	    }
-	}
-      else
-	manage_transmission(&clients, &readfs);
+      my_log(__func__, "get addrin", 1);
+      return (SOCKET_ERROR);
     }
-  
+  if (bind_to((*sock), sin) == SOCKET_ERROR)
+    return (SOCKET_ERROR);
+  if (listen_to((*sock), MAX_CLIENT) == SOCKET_ERROR)
+    return (SOCKET_ERROR);
+  return (*sock);
 }
 
 int		init_server()
 {
-  int		sock;
   t_chain	*clients;
-  
-  sock = 0;
-  clients = create_chainf(free_clients);
-  if ((sock = get_connection()) == SOCKET_ERROR)
+  t_chain	*salons;
+  int		max_sdr;
+  int		sock;
+  fd_set	read_fds;
+  t_client	*client;
+
+  if ((max_sdr = init_sock(&sock, &clients, &salons)) == SOCKET_ERROR)
+    return (1);
+  if (init_salon(&salons) == NULL)
+    return (1);
+  while (1)
     {
-      my_log(__func__, "socket init failed", 1);
+      max_sdr = set_fds(&read_fds, sock, clients);
+      if (select(max_sdr + 1, &read_fds, NULL, NULL, NULL) < 0)
+	{
+	  my_log(__func__, "select failed", 4);
+	  continue;
+	}
+      if (FD_ISSET(STDIN_FILENO, &read_fds))
+	  if (server_talking(&clients) == 1)
+	    return (1);
+      if (FD_ISSET(sock, &read_fds))
+	{
+	  my_log(__func__, "client acceptation", 4);
+	  client = accept_client(sock);
+	  max_sdr = register_client(&clients, &read_fds, max_sdr, client);
+	}
+      else
+	{
+	  my_log(__func__, "manage transmission: ", 4);
+	  manage_transmission(&clients, &salons, &read_fds);
+	}
+    }
+   return (0);
+}
+
+
+int	server_talking(t_chain **clients)
+{
+  char	*str;
+  
+  my_log(__func__, "keyboard entry", 4);
+  if ((str = readline()) != NULL)
+    {
+      message_maker(NULL, str, BROADCAST);
+      send_msg_to_all(*clients, str, 0, NULL);
+      free(str);
+      return (0);
+    }
+  else
+    {
+      my_log(__func__, "readline problem", 1);
       return (1);
     }
-  if (workflow(sock, clients) == SOCKET_ERROR)
-    return (SOCKET_ERROR);
-  close(sock);
-  my_log(__func__, "socket successfully closed", 3);
-  delete_chainf(&clients);
-  my_log(__func__, "clients' list successfully cleared", 3);
-  return (0);
 }

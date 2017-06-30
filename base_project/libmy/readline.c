@@ -5,7 +5,7 @@
 ** Login   <castel_a@etna-alternance.net>
 ** 
 ** Started on  Fri Nov 11 15:36:20 2016 CASTELLARNAU Aurelien
-** Last update Sat Nov 12 10:34:35 2016 CASTELLARNAU Aurelien
+** Last update Wed Apr 26 10:27:38 2017 CASTELLARNAU Aurelien
 */
 
 #include <stdlib.h>
@@ -22,13 +22,15 @@ char		*readline(void)
   ssize_t	ret;
   char		*buff;
 
-  if ((buff = malloc((50 + 1) * sizeof(char))) == NULL)
+  if ((buff = malloc((1024 + 1) * sizeof(char))) == NULL)
     return (NULL);
-  if ((ret = read(0, buff, 50)) > 1)
+  if ((ret = read(0, buff, 1025)) > 0)
     {
       buff[ret - 1] = '\0';
       return (buff);
     }
+  if (ret < 0)
+    devlog(__func__, "readline return -1", 1);
   free(buff);
   return (NULL);
 }

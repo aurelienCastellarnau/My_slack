@@ -5,7 +5,7 @@
 ** Login   <castel_a@etna-alternance.net>
 ** 
 ** Started on  Thu Feb  2 23:56:36 2017 CASTELLARNAU Aurelien
-** Last update Sun Apr 16 16:48:30 2017 CASTELLARNAU Aurelien
+** Last update Wed Apr 26 10:15:30 2017 CASTELLARNAU Aurelien
 */
 
 #include <stdlib.h>
@@ -110,7 +110,8 @@ int		check_mandatories(int argc, char *argv[], t_chain **options)
 ** is coherent with the options
 ** defines by the lib's user
 */
-int             validate_opt(int argc,
+int             validate_opt(int begin,
+			     int argc,
 			     char *argv[],
 			     t_chain **options)
 {
@@ -118,7 +119,7 @@ int             validate_opt(int argc,
   t_link	*tmp;
   t_option	*option;
   
-  index_argv = 1;
+  index_argv = begin;
   while (index_argv < argc)
     {
       if (argv[index_argv][0] == 45)
@@ -131,7 +132,10 @@ int             validate_opt(int argc,
 	      if (!my_strcmp(option->name, argv[index_argv]))
 		{
 		  if (check_arguments(index_argv, argc, option, argv) && option->mandatory)
-		    return (1);
+		    {
+		      devlog(__func__, "parsing argument failed", 1);
+		      return (1);
+		    }
 		  if (option->mandatory == 1)
 		      option->mandatory = 0;
 		  option->to_execute = 1;  

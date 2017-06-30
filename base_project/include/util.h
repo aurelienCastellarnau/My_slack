@@ -1,16 +1,1 @@
-/*
-** util.h for my_slack in /home/aurelien/Documents/test/base_project
-** 
-** Made by CASTELLARNAU Aurelien
-** Login   <castel_a@etna-alternance.net>
-** 
-** Started on  Wed Apr 19 16:26:55 2017 CASTELLARNAU Aurelien
-** Last update Wed Apr 19 16:27:42 2017 CASTELLARNAU Aurelien
-*/
-
-#ifndef  _UTIL_H_
-# define _UTIL_H_
-
-void	clear_buff(char *buffer);
-
-#endif /* !_UTIL_H_ */
+/*** util.h for my_slack in /home/aurelien/Documents/test/base_project** ** Made by CASTELLARNAU Aurelien** Login   <castel_a@etna-alternance.net>** ** Last update Thu Apr 27 21:18:56 2017 CASTELLARNAU Aurelien*/#ifndef  _UTIL_H_# define _UTIL_H_#include "client.h"void	clear_buff(char *buffer);void	clear_room(char *buffer);void	send_msg_to_all(t_chain *clients, char *str, char *room, t_client *from);void	message_maker(t_client *c, char *buffer, int type);#endif  /* !_UTIL_H_ */

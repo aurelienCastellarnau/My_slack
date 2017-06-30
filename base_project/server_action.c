@@ -5,23 +5,29 @@
 ** Login   <castel_a@etna-alternance.net>
 ** 
 ** Started on  Wed Apr 19 21:20:43 2017 CASTELLARNAU Aurelien
-** Last update Thu Apr 20 00:30:48 2017 CASTELLARNAU Aurelien
+** Last update Thu Apr 27 23:37:15 2017 CASTELLARNAU Aurelien
+** Last update Wed Apr 26 16:15:02 2017 MASERA Mathieu
 */
 
 #include "libmy.h"
-#include "util.h"
+#include "struct.h"
 #include "client.h"
 #include "server.h"
+#include "init_run_params.h"
+#include "util.h"
+#include "listen_clients.h"
+#include "run_parse.h"
+#include "run_action.h"
 #include "server_action.h"
 
 int	bind_to(int sock, t_sockaddr_in *sin)
 {
-  char	buffer[40];
+  char	buffer[BUFF_SIZE];
 
   if (bind(sock, (t_sockaddr*)sin, sizeof(t_sockaddr_in)) == SOCKET_ERROR)
     {
       sprintf(buffer, "Server bind at %s on port %d failed.", inet_ntoa(sin->sin_addr), htons(sin->sin_port));
-      my_log(__func__, buffer, 3);
+      my_log(__func__, buffer, 2);
       return (SOCKET_ERROR);
     }
   else
@@ -56,6 +62,11 @@ int		set_fds(fd_set *readfs, int sock, t_chain *clients)
   FD_ZERO(readfs);
   FD_SET(STDIN_FILENO, readfs);
   FD_SET(sock, readfs);
+  if (clients == NULL || clients->first == NULL)
+    {
+      my_log(__func__, "list of clients is empty", 2);
+      return (sock);
+    }
   ltmp = clients->first;
   while (ltmp)
     {
@@ -69,72 +80,29 @@ int		set_fds(fd_set *readfs, int sock, t_chain *clients)
   return (max_sd);
 }
 
-int		broadcast(t_chain *clients)
+/*
+** manage bucle on clients
+*/
+int		manage_transmission(t_chain **clients, t_chain **salons, fd_set *readfs)
 {
-  char		*input;
   t_link	*ltmp;
   t_client	*c;
 
-  if ((input = readline()) == NULL)
+  my_log(__func__, "manage transmission begin", 4);
+  if (chain_is_empty(clients))
     {
-      my_log(__func__, MEM_ERR, 1);
+      my_log(__func__, "client list is empty", 2);
       return (SOCKET_ERROR);
     }
-  ltmp = clients->first;
+  ltmp = (*clients)->first;
   while (ltmp)
     {
       c = (t_client*)ltmp->content;
-      send(c->sock, input, my_strlen(input) + 1, 0);
-      my_log(__func__, "send ok", 3);
-      ltmp = ltmp->next;
+      if (FD_ISSET(c->sock, readfs))
+	listen_clients(clients, salons, ltmp, c);
+      if (ltmp != NULL)
+	ltmp = ltmp->next;
     }
-  free(input);
-  input = NULL;
   return (0);
 }
 
-int		manage_transmission(t_chain **clients, fd_set *readfs)
-{
-  t_link	*ltmp;
-  t_link	*inner_ltmp;
-  int		n;
-  t_client	*c;
-  char		buffer[80];
-  
-  ltmp = (*clients)->first;
-  while(ltmp)
-    {
-      c= (t_client*)ltmp->content;
-      if (FD_ISSET(c->sock, readfs))
-	{
-	  my_log(__func__, "Something happend on client sock", 3);
-	  if ((n = recv(c->sock, buffer, 79, 0)) == SOCKET_ERROR)
-	    my_log(__func__, "receiving client socket content failed", 2);
-	  else if (n == 0)
-	    {
-	      my_log(__func__, "client disconnected", 3);
-	      close(c->sock);
-	      remove_link(clients, ltmp);
-	    }
-	  else
-	    {
-	      my_log(__func__, "message received: ", 3);
-	      my_putstr(buffer);
-	      inner_ltmp = (*clients)->first;
-	      while (inner_ltmp)
-		{
-		  c = (t_client*)inner_ltmp->content;
-		  if (ltmp != inner_ltmp)
-		    {
-		      send(c->sock, buffer, 19, 0);
-		      my_log(__func__, "send ok", 3);
-		    }
-		  inner_ltmp = inner_ltmp->next;
-		}
-	      clear_buff(buffer);
-	    }
-	}
-      ltmp = ltmp->next;
-    }
-  return (0);
-}

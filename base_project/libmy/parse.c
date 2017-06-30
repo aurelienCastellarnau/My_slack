@@ -5,7 +5,7 @@
 ** Login   <castel_a@etna-alternance.net>
 ** 
 ** Started on  Wed Feb  1 13:14:04 2017 CASTELLARNAU Aurelien
-** Last update Thu Apr 13 21:02:25 2017 CASTELLARNAU Aurelien
+** Last update Mon Apr 24 23:46:46 2017 CASTELLARNAU Aurelien
 */
 
 #include <stdlib.h>
@@ -17,14 +17,14 @@
 ** if all tests pass, parse() reorganize
 ** t_chain **options and return success/error.
 */
-int		parse(int argc,
+int		parse(int begin,
+		      int argc,
 		      char *argv[],
 		      t_chain **options)
 {
   int		check;
   
-  check = validate_opt(argc, argv, options);
-  my_log(__func__, "check : ", 1);
+  check = validate_opt(begin, argc, argv, options);
   if (check)
     my_log(__func__, "error on parsing arguments", 1);
   return (check);

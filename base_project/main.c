@@ -5,13 +5,12 @@
 ** Login   <castel_a@etna-alternance.net>
 ** 
 ** Started on  Wed Apr  5 11:44:31 2017 CASTELLARNAU Aurelien
-** Last update Sun Apr 16 17:14:28 2017 CASTELLARNAU Aurelien
+** Last update Thu Apr 27 23:26:40 2017 CASTELLARNAU Aurelien
 */
 
 #include <stdlib.h>
 #include "libmy.h"
 #include "display.h"
-#include "config.h"
 #include "init.h"
 #include "server.h"
 
